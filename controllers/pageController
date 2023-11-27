@@ -1,0 +1,18 @@
+const genPage = require('.functions/genPage').genPage
+const path = require('path')
+TEMPLATE_LOCATION = '../views/pages/tablePage.pug'
+DATA_DIR = '../tmp'
+DESTINATION_DIR = '../public'
+
+
+//incomplete
+const createPage = (req, res) => {
+  //create html page. also temporary template path
+  genPage(path.resolve(TEMPLATE_LOCATION), path.resolve(DATA_DIR, req.file.path), path.resolve(DESTINATION_DIR, 'index.html'))
+  //create bucket
+  //enable static website
+}
+
+module.exports = {
+  createPage: createPage
+}

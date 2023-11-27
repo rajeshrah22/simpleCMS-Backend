@@ -2,10 +2,11 @@
   "name": "simple-cms-backend",
   "version": "1.0.0",
   "description": "Backend logic for simpleCMS. Includes the template compilation and website deployment",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon app.js"
   },
   "keywords": [],
   "author": "Rahul Rajesh",
