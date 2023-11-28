@@ -1,0 +1,15 @@
+doctype html
+html
+
+  body
+    table
+      thead
+        tr
+          each header in headers
+            th= header
+      tbody
+          each field in fields
+            tr
+              td= field.id
+              td= field.name
+              td= field.price
