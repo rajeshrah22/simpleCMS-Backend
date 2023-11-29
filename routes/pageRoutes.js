@@ -14,7 +14,7 @@ router.route('/')
     .get((req, res) => {
       res.sendStatus(200).send("Hellow")
     })
-    .post(upload.single('csv'), pageController.createPage)
+    .post(upload.single('csv'), pageController.createWebsite)
 
 module.exports = {
   router: router

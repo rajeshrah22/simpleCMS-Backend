@@ -5,7 +5,11 @@ https://javascript.plainenglish.io/using-node-js-s3-to-create-delete-list-bucket
 and others from
 https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/javascript_s3_code_examples.html
 */
-const { S3Client, ListBucketsCommand, CreateBucketCommand, DeleteBucketCommand, PutObjectCommand,  ListObjectsV2Command, PutBucketWebsiteCommand } = require('@aws-sdk/client-s3')
+const { S3Client, ListBucketsCommand,
+    CreateBucketCommand, DeleteBucketCommand,
+        PutObjectCommand, ListObjectsV2Command,
+            PutBucketWebsiteCommand, DeletePublicAccessBlockCommand,
+                PutBucketPolicyCommand } = require('@aws-sdk/client-s3')
 const fs = require('fs')
 
 const client = new S3Client({})
@@ -132,11 +136,44 @@ const configureWebsite = async (bucketName) => {
   }
 }
 
+const deletePublicAccessBlock = async (bucketName) => {
+  const bucketParams = {
+    Bucket: bucketName
+  }
+
+  const command = new DeletePublicAccessBlockCommand(bucketParams)
+
+  try{
+    const response = await client.send(command)
+    console.log(response)
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+const putBucketPolicy = async (policy, bucketName) => {
+  const params = {
+    Policy: JSON.stringify(policy),
+    Bucket: bucketName
+  }
+
+  const command = new PutBucketPolicyCommand(params)
+
+  try {
+    const response = await client.send(command);
+    console.log(response);
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 module.exports = {
   createBucket: createBucket,
   listBuckets: listBuckets,
   uploadFile: uploadFile,
   listObjectsInBucket: listObjectsInBucket,
   deleteBucket: deleteBucket,
-  configureWebsite: configureWebsite
+  configureWebsite: configureWebsite,
+  deletePublicAccessBlock: deletePublicAccessBlock,
+  putBucketPolicy: putBucketPolicy
 }
