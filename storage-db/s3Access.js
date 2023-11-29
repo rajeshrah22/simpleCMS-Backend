@@ -1,40 +1,47 @@
 /*
 some code from 
 https://javascript.plainenglish.io/using-node-js-s3-to-create-delete-list-buckets-and-upload-list-objects-part-2-fb1b76da36dc
+
+and others from
+https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/javascript_s3_code_examples.html
 */
-const s3ClientPackage = require('@aws-sdk/client-s3');
+const { S3Client, ListBucketsCommand, CreateBucketCommand, DeleteBucketCommand, PutObjectCommand,  ListObjectsV2Command} = require('@aws-sdk/client-s3');
 const fs = require('fs');
 
-const s3 = new AWS.S3({
-  accessKeyId: process.env.ACCESS_KEY_RAHUL_PERSONAL_USE,
-  secretAccessKey: process.env.SECRET_ACCESS_KEY_PERSONAL_USE
-});
+const client = new S3Client({});
 
-const createBucket = (bucketName) => {
+const createBucket = async (bucketName) => {
   var bucketParams = {
     Bucket: bucketName
   };
 
-  s3.createBucket(bucketParams, (err, data) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log("Successful createBucket", data.location)
-    }
-  })
+  const command = new CreateBucketCommand(bucketParams);
+
+  try {
+    const { Location } = await client.send(command);
+    console.log(`Bucket created with location ${Location}`);
+  } catch (err) {
+    console.error(err);
+  }
 };
 
-const listBuckets = () => {
-  s3.listBuckets((err, data) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log("Succesfull list buckets", data.Buckets);
-    }
-  })
+const listBuckets = async () => {
+  const command = new ListBucketsCommand({});
+
+  try {
+    const { Owner, Buckets } = await client.send(command);
+    console.log(
+      `${Owner.DisplayName} owns ${Buckets.length} bucket${
+        Buckets.length === 1 ? "" : "s"
+      }:`
+    );
+    console.log(`${Buckets.map((b) => ` • ${b.Name}`).join("\n")}`);
+  } catch (err) {
+    console.error(err);
+  }
 };
 
-const uploadFile = (filePath,bucketName,keyName) => {
+const uploadFile = async (filePath,bucketName,keyName) => {
   // Read the file
   const file = fs.readFileSync(filePath);
 
@@ -45,46 +52,59 @@ const uploadFile = (filePath,bucketName,keyName) => {
       Body: file // Local file 
   };
 
-  s3.upload(uploadParams, function(err, data) {
-      if (err) {
-          console.log("Error", err);
-      } 
-      if (data) {
-          console.log("Upload Success", data.Location);
-      }
-  });
+  const command = new PutObjectCommand(uploadParams);
+
+  try {
+    const response = await client.send(command);
+    console.log(response);
+  } catch (err) {
+    console.error(err);
+  }
 };
 
-const listObjectsInBucket = (bucketName) => {
+const listObjectsInBucket = async (bucketName) => {
   // Create the parameters for calling listObjects
   var bucketParams = {
       Bucket : bucketName,
+      MaxKeys: 1
   };
 
-  // Call S3 to obtain a list of the objects in the bucket
-  s3.listObjects(bucketParams, function(err, data) {
-      if (err) {
-          console.log("Error", err);
-      } else {
-          console.log("Success", data);
-      }
-  });
+  const command = new ListObjectsV2Command(bucketParams);
+
+  try {
+    let isTruncated = true;
+
+    console.log("Your bucket contains the following objects:\n");
+    let contents = "";
+
+    while (isTruncated) {
+      const { Contents, IsTruncated, NextContinuationToken } =
+        await client.send(command);
+      const contentsList = Contents.map((c) => ` • ${c.Key}`).join("\n");
+      contents += contentsList + "\n";
+      isTruncated = IsTruncated;
+      command.input.ContinuationToken = NextContinuationToken;
+    }
+    console.log(contents);
+  } catch (err) {
+    console.error(err);
+  }
 }
 
-const deleteBucket = (bucketName) => {
+const deleteBucket = async (bucketName) => {
   // Create params for S3.deleteBucket
   var bucketParams = {
       Bucket : bucketName
   };
 
-  // Call S3 to delete the bucket
-  s3.deleteBucket(bucketParams, function(err, data) {
-      if (err) {
-          console.log("Error", err);
-      } else {
-          console.log("Success", data);
-      }
-  });
+  const command = new DeleteBucketCommand(bucketParams);
+
+  try {
+    const response = await client.send(command);
+    console.log(response);
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 module.exports = {
