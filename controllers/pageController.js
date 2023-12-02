@@ -28,6 +28,8 @@ const createWebsite = async (req, res) => {
 
   //enable static website
   s3Access.configureWebsite(BUCKET_NAME)
+
+  res.send("WebsiteDone")
 }
 
 module.exports = {

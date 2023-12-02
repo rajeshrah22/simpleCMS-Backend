@@ -45,7 +45,7 @@ const listBuckets = async () => {
   }
 }
 
-const uploadFile = async (filePath,bucketName,keyName) => {
+const uploadFile = async (filePath, bucketName, keyName, type="text/html") => {
   // Read the file
   const file = fs.readFileSync(filePath)
 
@@ -53,8 +53,11 @@ const uploadFile = async (filePath,bucketName,keyName) => {
   const uploadParams = {
       Bucket: bucketName, // Bucket into which you want to upload file
       Key: keyName, // Name by which you want to save it
-      Body: file // Local file 
+      Body: file, // Local file
+      ContentType: type
   }
+
+  console.log(uploadParams)
 
   const command = new PutObjectCommand(uploadParams)
 
@@ -113,7 +116,7 @@ const deleteBucket = async (bucketName) => {
 
 const configureWebsite = async (bucketName) => {
   const bucketParams = {
-    Bucket: "test-bucket",
+    Bucket: bucketName,
     WebsiteConfiguration: {
       ErrorDocument: {
         // The object key name to use when a 4XX class error occurs.
@@ -132,7 +135,7 @@ const configureWebsite = async (bucketName) => {
     const response = await client.send(command)
     console.log(response)
   } catch (err) {
-    console.error(err)
+    console.error(err + "\nError with website config")
   }
 }
 
